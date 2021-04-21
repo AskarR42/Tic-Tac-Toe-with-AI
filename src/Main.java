@@ -204,9 +204,6 @@ class Menu {
 
     public static Player[] getPlayers(String[] command) {
         Player[] players = new Player[2];
-        if (command == null) {
-            return null;
-        }
 
         for (int i = 0; i < 2; i++) {
             if ("easy".equals(command[i + 1])) {
@@ -252,6 +249,7 @@ public class Main {
                     System.out.println("Draw");
                 }
             }
+            field.emptyField();
         }
     }
 }
