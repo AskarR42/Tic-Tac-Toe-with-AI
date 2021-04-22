@@ -247,7 +247,9 @@ class Hard implements Player {
 }
 
 class Menu {
+
     final static Scanner scanner = new Scanner(System.in);
+
     public static String[] getCommand() {
         String[] command;
         while (true) {
