@@ -93,7 +93,7 @@ class User implements Player {
                 j = scanner.nextInt() - 1;
                 scanner.nextLine(); // clean \r\n
 
-                //checking if i and j is invalid
+                //checking if i or j is invalid
                 if (!board.isAvailable(i, j)) {
                     System.out.println("This cell is occupied! Choose another one!");
                     continue;
