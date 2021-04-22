@@ -10,17 +10,6 @@ class Board {
         emptyBoard();
     }
 
-    public Board(String[][] board) {
-        this.board = new String[3][3];
-        for (int i = 0; i < 3; i++) {
-            this.board[i] = board[i].clone();
-        }
-    }
-
-    public String[][] getBoard() {
-        return board;
-    }
-
     public void emptyBoard() {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -148,45 +137,44 @@ class Medium implements Player {
 
     @Override
     public void makeMove(Board board, String mark) {
-        Board copyBoard = new Board(board.getBoard());
 
-        int i;
-        int j;
+        int iMove;
+        int jMove;
         do {
-            i = random.nextInt(3);
-            j = random.nextInt(3);
-        } while (!copyBoard.isAvailable(i, j));
+            iMove = random.nextInt(3);
+            jMove = random.nextInt(3);
+        } while (!board.isAvailable(iMove, jMove));
 
         String oppositeMark = ("X".equals(mark)) ? "O" : "X";
 
-        for (int k = 0; k < 3; k++) {
-            for (int l = 0; l < 3; l++) {
-                if (copyBoard.isAvailable(k, l)) {
-                    copyBoard.updateBoard(k, l, oppositeMark);
-                    if (copyBoard.win(oppositeMark)) {
-                        i = k;
-                        j = l;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board.isAvailable(i, j)) {
+                    board.updateBoard(i, j, oppositeMark);
+                    if (board.win(oppositeMark)) {
+                        iMove = i;
+                        jMove = j;
                     }
-                    copyBoard.updateBoard(k, l, " ");
+                    board.updateBoard(i, j, " ");
                 }
             }
         }
 
-        for (int k = 0; k < 3; k++) {
-            for (int l = 0; l < 3; l++) {
-                if (copyBoard.isAvailable(k, l)) {
-                    copyBoard.updateBoard(k, l, mark);
-                    if (copyBoard.win(mark)) {
-                        i = k;
-                        j = l;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board.isAvailable(i, j)) {
+                    board.updateBoard(i, j, mark);
+                    if (board.win(mark)) {
+                        iMove = i;
+                        jMove = j;
                     }
-                    copyBoard.updateBoard(k, l, " ");
+                    board.updateBoard(i, j, " ");
                 }
             }
         }
 
         System.out.println("Making move level \"medium\"");
-        board.updateBoard(i, j, mark);
+        board.updateBoard(iMove, jMove, mark);
     }
 }
 
