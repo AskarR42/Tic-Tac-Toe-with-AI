@@ -110,7 +110,6 @@ class User implements Player {
             }
         }
         board.updateBoard(i, j, mark);
-
     }
 }
 
