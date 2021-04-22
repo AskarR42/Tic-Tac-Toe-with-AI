@@ -2,72 +2,90 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.Random;
 
-class Field {
-    private final String[][] desk;
+class Board {
+    private final String[][] board;
 
-    Field() {
-        desk = new String[3][3];
-        emptyField();
+    public Board() {
+        board = new String[3][3];
+        emptyBoard();
     }
 
-    public void printField() {
+    public Board(String[][] board) {
+        this.board = new String[3][3];
+        for (int i = 0; i < 3; i++) {
+            this.board[i] = board[i].clone();
+        }
+    }
+
+    public String[][] getBoard() {
+        return board;
+    }
+
+    public void emptyBoard() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                board[i][j] = " ";
+            }
+        }
+    }
+
+    public void printBoard() {
         System.out.println("---------");
         for (int i = 0; i < 3; i++) {
             System.out.print("|");
             for (int j = 0; j < 3; j++) {
-                System.out.print(" " + desk[i][j]);
+                System.out.print(" " + board[i][j]);
             }
             System.out.println(" |");
         }
         System.out.println("---------");
     }
 
-    public void emptyField() {
+    public boolean isAvailable(int i, int j) {
+        return " ".equals(board[i][j]);
+    }
+
+    public void updateBoard(int i, int j, String mark) {
+        board[i][j] = mark;
+    }
+
+    public boolean win(String mark) {
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                desk[i][j] = " ";
-            }
-        }
-    }
-
-    public boolean isNotAvailable(int i, int j) {
-        return !" ".equals(desk[i][j]);
-    }
-
-    public void updateField(int i, int j, String s) {
-        desk[i][j] = s;
-    }
-
-    public boolean wins(String s) {
-        for (int i = 0; i < 3; i++) {
-            if (desk[i][0].equals(s) && desk[i][1].equals(s) && desk[i][2].equals(s)) {
+            if (board[i][0].equals(mark) && board[i][1].equals(mark) && board[i][2].equals(mark)) {
                 return true;
             }
-            if (desk[0][i].equals(s) && desk[1][i].equals(s) && desk[2][i].equals(s)) {
+            if (board[0][i].equals(mark) && board[1][i].equals(mark) && board[2][i].equals(mark)) {
                 return true;
             }
         }
-        if (desk[0][0].equals(s) && desk[1][1].equals(s) && desk[2][2].equals(s)) {
+        if (board[0][0].equals(mark) && board[1][1].equals(mark) && board[2][2].equals(mark)) {
             return true;
         }
-        if (desk[0][2].equals(s) && desk[1][1].equals(s) && desk[2][0].equals(s)) {
+        if (board[0][2].equals(mark) && board[1][1].equals(mark) && board[2][0].equals(mark)) {
             return true;
         }
 
         return false;
     }
 
-    public boolean canWin(int i, int j, String s) {
-        updateField(i, j, s);
-        boolean res = wins(s);
-        updateField(i, j, " ");
+    public boolean endGame() {
+        boolean res = true;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (" ".equals(board[i][j])) {
+                    res = false;
+                    break;
+                }
+            }
+        }
         return res;
     }
+
 }
 
 interface Player {
 
-    void makeMove(Field field, String s);
+    void makeMove(Board board, String mark);
 }
 
 class User implements Player {
@@ -75,7 +93,7 @@ class User implements Player {
     final private Scanner scanner = new Scanner(System.in);
 
     @Override
-    public void makeMove(Field field, String s) {
+    public void makeMove(Board board, String mark) {
         int i;
         int j;
         while (true) {
@@ -87,7 +105,7 @@ class User implements Player {
                 scanner.nextLine(); // clean \r\n
 
                 //checking if i and j is invalid
-                if (field.isNotAvailable(i, j)) {
+                if (!board.isAvailable(i, j)) {
                     System.out.println("This cell is occupied! Choose another one!");
                     continue;
                 }
@@ -102,7 +120,7 @@ class User implements Player {
                 scanner.next();
             }
         }
-        field.updateField(i, j, s);
+        board.updateBoard(i, j, mark);
 
     }
 }
@@ -112,15 +130,15 @@ class Easy implements Player {
     final private Random random = new Random();
 
     @Override
-    public void makeMove(Field field, String s) {
+    public void makeMove(Board board, String mark) {
         int i;
         int j;
         do {
             i = random.nextInt(3);
             j = random.nextInt(3);
-        } while (field.isNotAvailable(i, j));
+        } while (!board.isAvailable(i, j));
         System.out.println("Making move level \"easy\"");
-        field.updateField(i, j, s);
+        board.updateBoard(i, j, mark);
     }
 }
 
@@ -129,41 +147,115 @@ class Medium implements Player {
     final static Random random = new Random();
 
     @Override
-    public void makeMove(Field field, String s) {
+    public void makeMove(Board board, String mark) {
+        Board copyBoard = new Board(board.getBoard());
 
         int i;
         int j;
         do {
             i = random.nextInt(3);
             j = random.nextInt(3);
-        } while (field.isNotAvailable(i, j));
+        } while (!copyBoard.isAvailable(i, j));
 
-        String opposite = ("X".equals(s)) ? "O" : "X";
+        String oppositeMark = ("X".equals(mark)) ? "O" : "X";
 
         for (int k = 0; k < 3; k++) {
             for (int l = 0; l < 3; l++) {
-                if (!field.isNotAvailable(k, l)) {
-                    if (field.canWin(k, l, opposite)) {
+                if (copyBoard.isAvailable(k, l)) {
+                    copyBoard.updateBoard(k, l, oppositeMark);
+                    if (copyBoard.win(oppositeMark)) {
                         i = k;
                         j = l;
                     }
+                    copyBoard.updateBoard(k, l, " ");
                 }
             }
         }
 
         for (int k = 0; k < 3; k++) {
             for (int l = 0; l < 3; l++) {
-                if (!field.isNotAvailable(k, l)) {
-                    if (field.canWin(k, l, s)) {
+                if (copyBoard.isAvailable(k, l)) {
+                    copyBoard.updateBoard(k, l, mark);
+                    if (copyBoard.win(mark)) {
                         i = k;
                         j = l;
                     }
+                    copyBoard.updateBoard(k, l, " ");
                 }
             }
         }
 
         System.out.println("Making move level \"medium\"");
-        field.updateField(i, j, s);
+        board.updateBoard(i, j, mark);
+    }
+}
+
+class Hard implements Player {
+
+    private int minimax(Board board, String AIMark, boolean AITurn) {
+        if (board.win(AIMark)) {
+            return 1;
+        }
+        if (board.win("X".equals(AIMark) ? "O" : "X")) {
+            return -1;
+        }
+        if (board.endGame()) {
+            return 0;
+        }
+
+        if (AITurn) {
+            int best = Integer.MIN_VALUE;
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board.isAvailable(i, j)) {
+                        board.updateBoard(i, j, AIMark);
+                        best = Math.max(best, minimax(board, AIMark, false));
+                        board.updateBoard(i, j, " ");
+                    }
+                }
+            }
+            return best;
+        } else {
+            int best = Integer.MAX_VALUE;
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board.isAvailable(i, j)) {
+                        board.updateBoard(i, j, "X".equals(AIMark) ? "O" : "X");
+                        best = Math.min(best, minimax(board, AIMark, true));
+                        board.updateBoard(i, j, " ");
+                    }
+                }
+            }
+            return best;
+        }
+    }
+
+    @Override
+    public void makeMove(Board board, String mark) {
+        int bestValue = Integer.MIN_VALUE;
+        int iMove = -1;
+        int jMove = -1;
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board.isAvailable(i, j)) {
+                    board.updateBoard(i, j, mark);
+                    int moveValue = minimax(board, mark, false);
+                    board.updateBoard(i, j, " ");
+
+                    if (moveValue > bestValue) {
+                        bestValue = moveValue;
+                        iMove = i;
+                        jMove = j;
+                    }
+                }
+
+            }
+        }
+        System.out.println("Making move level \"hard\"");
+        board.updateBoard(iMove, jMove, mark);
     }
 }
 
@@ -188,11 +280,11 @@ class Menu {
                 System.out.println("Bad parameters!");
                 continue;
             }
-            if (!("user".equals(command[1]) || "easy".equals(command[1]) || "medium".equals(command[1]))) {
+            if (!("user".equals(command[1]) || "easy".equals(command[1]) || "medium".equals(command[1]) || "hard".equals(command[1]))) {
                 System.out.println("Bad parameters!");
                 continue;
             }
-            if (!("user".equals(command[2]) || "easy".equals(command[2]) || "medium".equals(command[2]))) {
+            if (!("user".equals(command[2]) || "easy".equals(command[2]) || "medium".equals(command[2]) || "hard".equals(command[2]))) {
                 System.out.println("Bad parameters!");
                 continue;
             }
@@ -204,6 +296,9 @@ class Menu {
 
     public static Player[] getPlayers(String[] command) {
         Player[] players = new Player[2];
+        if (command == null) {
+            return null;
+        }
 
         for (int i = 0; i < 2; i++) {
             if ("easy".equals(command[i + 1])) {
@@ -211,6 +306,9 @@ class Menu {
             }
             if ("medium".equals(command[i + 1])) {
                 players[i] = new Medium();
+            }
+            if ("hard".equals(command[i + 1])) {
+                players[i] = new Hard();
             }
             if ("user".equals(command[i + 1])) {
                 players[i] = new User();
@@ -222,7 +320,7 @@ class Menu {
 
 
 public class Main {
-    final static Field field = new Field();
+    final static Board BOARD = new Board();
 
     public static void main(String[] args) {
         while (true) {
@@ -233,23 +331,23 @@ public class Main {
 
             Player[] players = Menu.getPlayers(command);
             for (int i = 0; i < 9; i++) {
-                field.printField();
-                players[i % 2].makeMove(field, (i % 2 == 0) ? "X" : "O");
+                BOARD.printBoard();
+                players[i % 2].makeMove(BOARD, (i % 2 == 0) ? "X" : "O");
 
-                if (field.wins("X")) {
-                    field.printField();
+                if (BOARD.win("X")) {
+                    BOARD.printBoard();
                     System.out.println("X wins");
                     break;
-                } else if (field.wins("O")) {
-                    field.printField();
+                } else if (BOARD.win("O")) {
+                    BOARD.printBoard();
                     System.out.println("O wins");
                     break;
-                } else if (i == 8) {
-                    field.printField();
+                } else if (BOARD.endGame()) {
+                    BOARD.printBoard();
                     System.out.println("Draw");
                 }
             }
-            field.emptyField();
+            BOARD.emptyBoard();
         }
     }
 }
