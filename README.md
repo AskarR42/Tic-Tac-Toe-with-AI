@@ -13,6 +13,6 @@ where user - non-AI player; easy, medium, hard - AI player.
 
 Easy - the computer plays randomly.
 
-Medium - the computer plays randomly, but if it can win on the next move, it makes a winning move.
+Medium - the computer plays randomly, but if it can win on the next move, it makes a winning move. Also does not allow to win opposite player if  it can.
 
 Hard - the computer uses minimax algorithm.
